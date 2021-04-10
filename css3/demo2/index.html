@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="msapplication-tap-highlight" content="no" />
+    <title>CSS3 实现360全景</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scene {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 1px dashed rgba(0,0,0,0.1);
+            /* 透视距离 */
+            perspective: 600px;
+        }
+
+        .control {
+            /* transform--style属性指定嵌套元素是怎样在三维空间中呈现 */
+            transform-style: preserve-3d;
+            /* transform: rotateX(-24deg) rotateY(-24deg); */
+        }
+
+        .cube {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .cube__face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            text-align: center;
+            line-height: 200px;
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.5);
+        }
+
+        .cube__face--front  {
+            transform: rotateY(0deg) translateZ(100px);
+            background: rgba(240, 39, 39, 0.8);
+        }
+        .cube__face--back   {
+            transform: rotateY(180deg) translateZ(100px);
+            background: rgba(243, 131, 4, 0.8);
+        }
+        .cube__face--right  {
+            transform: rotateY(90deg) translateZ(100px);
+            background: rgba(0, 255, 21, 0.8);
+        }
+        .cube__face--left   {
+            transform: rotateY(-90deg) translateZ(100px);
+            background: rgba(1, 163, 55, 0.8);
+        }
+        .cube__face--top    {
+            transform: rotateX(90deg) translateZ(100px);
+            background: rgba(4, 8, 243, 0.8);
+        }
+        .cube__face--bottom {
+            transform: rotateX(-90deg) translateZ(100px);
+            background: rgba(4, 127, 243, 0.8);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 场景容器，设置 perspective 视距  -->
+        <div id="scene" class="scene">
+            <!-- 控制层，设置 preserve-3d，手势交互、动画控制 -->
+            <div id="control" class="control">
+                <!-- 内容 -->
+                <div class="cube">
+                    <div class="cube__face cube__face--front">front</div>
+                    <div class="cube__face cube__face--back">back</div>
+                    <div class="cube__face cube__face--right">right</div>
+                    <div class="cube__face cube__face--left">left</div>
+                    <div class="cube__face cube__face--top">top</div>
+                    <div class="cube__face cube__face--bottom">bottom</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="./libs//hammer.min.js"></script> -->
+    <script>
+        const sceneEl = document.getElementById('scene')
+        const controlEl = document.getElementById('control')
+        let rotateX = -24
+        let rotateY = -24
+
+        window.onload = function() {
+            console.log('load')
+            bindEvent()
+            rotate()
+        }
+        window.onresize = function() {
+            console.log('resize')
+            reset()
+        }
+
+        // var scene = document.getElementById('scene')
+        // var hammertime = new Hammer(scene)
+        // hammertime.on('pan', e => {
+        //     console.log(e)
+        // })
+
+        function bindEvent() {
+            // 兼容 PC 和 mobile
+            let start = 'ontouchstart' in document ? 'touchstart' : 'mousedown'
+            let move = 'ontouchmove' in document ? 'touchmove' : 'mousemove'
+            let end = 'ontouchend' in document ? 'touchend' : 'mouseup'
+            let draging = false
+            let prevPoint = null
+
+            controlEl['on' + start] = function (e) {
+                let x = e.screenX || e.touches[0].screenX
+                let y = e.screenY || e.touches[0].screenY
+                prevPoint = { x , y }
+                draging = true
+            }
+
+            controlEl['on' + move] = function (e) {
+                e.stopPropagation()
+                e.preventDefault()
+
+                if(!draging) return false
+
+                let x = e.screenX || (e.touches && e.touches[0].screenX) || (e.changeTouches && e.changeTouches[0].screenX) || 0
+                let y = e.screenY || (e.touches && e.touches[0].screenY) || (e.changeTouches && e.changeTouches[0].screenY) || 0
+
+                let dx = (x - prevPoint.x) / 2
+                let dy = (y - prevPoint.y) / 2
+
+                prevPoint.x = x
+                prevPoint.y = y
+
+                // dx、dy 交换位置
+                rotateX -= dy
+                rotateY += dx
+
+                if (rotateX > 60) {
+                    rotateX = 60
+                } else if (rotateX < -60) {
+                    rotateX = -60
+                }
+                rotate()
+            }
+
+            controlEl['on' + end] = function (e) {
+                draging = false
+            }
+
+            controlEl.onmouseleave = function () {
+                draging = false
+            }
+        }
+
+        // 旋转
+        function rotate() {
+            // console.log(rotateX, rotateY)
+            controlEl.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+        }
+        // 重置
+        function reset() {
+            rotateX = -24
+            rotateY = -24
+            rotate()
+        }
+    </script>
+</body>
+</html>

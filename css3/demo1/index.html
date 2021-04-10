@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="msapplication-tap-highlight" content="no" />
+    <title>CSS 3D</title>
+    <style type="text/css">
+        .container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            user-select: none;
+        }
+
+        .scene {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            perspective: 1000px;
+        }
+
+        .scene .control {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: rotate 60s linear infinite;
+        }
+
+        .scene .control .cube {
+            width: 200px;
+            height: 200px;
+        }
+
+        .scene .control .cube .face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            line-height: 200px;
+            text-align: center;
+            font-size: 32px;
+        }
+
+        .face.face-front {
+            background: rgba(243, 21, 21, 0.5);
+            transform: rotateY(0deg) translateZ(100px);
+        }
+
+        .face.face-back {
+            background: rgba(10, 203, 228, 0.5);
+            transform: rotateY(180deg) translateZ(100px);
+        }
+
+        .face.face-left {
+            background: rgba(241, 241, 3, 0.5);
+            transform: rotateY(-90deg) translateZ(100px);
+        }
+
+        .face.face-right {
+            background: rgba(11, 248, 11, 0.5);
+            transform: rotateY(90deg) translateZ(100px);
+        }
+
+        .face.face-top {
+            background: rgba(35, 0, 236, 0.5);
+            transform: rotateX(90deg) translateZ(100px);
+        }
+
+        .face.face-bottom {
+            background: rgba(145, 1, 133, 0.5);
+            transform: rotateX(-90deg) translateZ(100px);
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotateY(0deg) rotateX(-10deg);
+            }
+
+            50% {
+                transform: rotateY(-360deg) rotateX(-10deg);
+            }
+
+            100% {
+                transform: rotateY(-720deg) rotateX(-10deg);
+            }
+        }
+
+        @keyframes rotate2 {
+            0% {
+                transform: rotateY(0deg) rotateX(-10deg);
+            }
+
+            50% {
+                transform: rotateY(-360deg) rotateX(-10deg);
+            }
+
+            100% {
+                transform: rotateY(0deg) rotateX(-10deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 场景容器，设置 preserve-3d 与 perspective 视距  -->
+        <div class="scene">
+            <!-- 控制容器，动画的控制层，通过这一层可以添加旋转动画或者触摸动画 -->
+            <div class="control">
+                <!-- 内容 -->
+                <div class="cube">
+                    <div class="face face-front">front</div>
+                    <div class="face face-back">back</div>
+                    <div class="face face-left">left</div>
+                    <div class="face face-right">right</div>
+                    <div class="face face-top">top</div>
+                    <div class="face face-bottom">bottom</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

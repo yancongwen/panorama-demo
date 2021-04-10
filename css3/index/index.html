@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="msapplication-tap-highlight" content="no" />
+    <title>CSS3 实现360全景</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scene {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            /* 透视距离 */
+            perspective: 1000px;
+        }
+
+
+        /* .scene-wrapper {
+            transform: translateZ(100px);
+            inset: 0px;
+            transform-style: preserve-3d;
+        } */
+
+        .control {
+            /* transform--style属性指定嵌套元素是怎样在三维空间中呈现 */
+            transform-style: preserve-3d;
+        }
+
+        .cube {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .cube__face {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            text-align: center;
+            line-height: 400px;
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            border: 1px solid rgba(0, 0, 0, 1);
+            transform-style: preserve-3d;
+            /* backface-visibility: hidden; */
+        }
+
+        .cube__face--front  {
+            transform: rotateY(0) translateZ(-200px);
+            background-image: url(./images/front.jpeg);
+        }
+        .cube__face--back   {
+            transform: rotateY(-180deg) translateZ(-200px);
+            background-image: url(./images/back.jpeg);
+        }
+        .cube__face--right  {
+            transform: rotateY(-90deg) translateZ(-200px);
+            background-image: url(./images/right.jpeg);
+        }
+        .cube__face--left   {
+            transform: rotateY(-270deg) translateZ(-200px);
+            background-image: url(./images/left.jpeg);
+        }
+        .cube__face--top    {
+            transform: rotateX(-90deg) translateZ(-200px);
+            background-image: url(./images/top.jpeg);
+        }
+        .cube__face--bottom {
+            transform: rotateX(90deg) translateZ(-200px);
+            background-image: url(./images/bottom.jpeg);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 场景容器，设置 perspective 视距  -->
+        <div id="scene" class="scene">
+            <div class="scene-wrapper">
+                <!-- 控制层，设置 preserve-3d，手势交互、动画控制 -->
+                <div id="control" class="control">
+                    <!-- 内容 -->
+                    <div class="cube">
+                        <div class="cube__face cube__face--front"></div>
+                        <div class="cube__face cube__face--back"></div>
+                        <div class="cube__face cube__face--right"></div>
+                        <div class="cube__face cube__face--left"></div>
+                        <div class="cube__face cube__face--top"></div>
+                        <div class="cube__face cube__face--bottom"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="./libs//hammer.min.js"></script> -->
+    <script>
+        const sceneEl = document.getElementById('scene')
+        const controlEl = document.getElementById('control')
+        let rotateX = 0
+        let rotateY = 0
+
+        window.onload = function() {
+            console.log('load')
+            bindEvent()
+            rotate()
+        }
+        window.onresize = function() {
+            console.log('resize')
+            reset()
+        }
+
+        // var scene = document.getElementById('scene')
+        // var hammertime = new Hammer(scene)
+        // hammertime.on('pan', e => {
+        //     console.log(e)
+        // })
+
+        function bindEvent() {
+            // 兼容 PC 和 mobile
+            let start = 'ontouchstart' in document ? 'touchstart' : 'mousedown'
+            let move = 'ontouchmove' in document ? 'touchmove' : 'mousemove'
+            let end = 'ontouchend' in document ? 'touchend' : 'mouseup'
+            let draging = false
+            let prevPoint = null
+
+            controlEl['on' + start] = function (e) {
+                let x = e.screenX || e.touches[0].screenX
+                let y = e.screenY || e.touches[0].screenY
+                prevPoint = { x , y }
+                draging = true
+            }
+
+            controlEl['on' + move] = function (e) {
+                e.stopPropagation()
+                e.preventDefault()
+
+                if(!draging) return false
+
+                let x = e.screenX || (e.touches && e.touches[0].screenX) || (e.changeTouches && e.changeTouches[0].screenX) || 0
+                let y = e.screenY || (e.touches && e.touches[0].screenY) || (e.changeTouches && e.changeTouches[0].screenY) || 0
+
+                let dx = (x - prevPoint.x) / 2
+                let dy = (y - prevPoint.y) / 2
+
+                prevPoint.x = x
+                prevPoint.y = y
+
+                // dx、dy 交换位置
+                rotateX -= dy
+                rotateY += dx
+
+                if (rotateX > 60) {
+                    rotateX = 60
+                } else if (rotateX < -60) {
+                    rotateX = -60
+                }
+                rotate()
+            }
+
+            controlEl['on' + end] = function (e) {
+                draging = false
+            }
+
+            controlEl.onmouseleave = function () {
+                draging = false
+            }
+        }
+
+        // 旋转
+        function rotate() {
+            // console.log(rotateX, rotateY)
+            controlEl.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+        }
+        // 重置
+        function reset() {
+            rotateX = 0
+            rotateY = 0
+            rotate()
+        }
+    </script>
+</body>
+</html>
